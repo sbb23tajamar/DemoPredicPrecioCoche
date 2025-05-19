@@ -47,7 +47,3 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-console.log("🔐 Endpoint:", AZURE_ENDPOINT);
-console.log("🔐 API Key:", API_KEY ? "Cargada" : "VACÍA");
-console.log("🔐 Deployment:", DEPLOYMENT_NAME);
-
