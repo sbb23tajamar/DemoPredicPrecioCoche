@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Predicción de Precio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 12px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        select option {
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 25px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #resultado {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #383d41;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Estilos específicos para el campo de marca (solo lectura) */
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predicción de precio para coches Audi</h1>
+
+        <form id="formulario">
+            <label for="marca">Marca:</label>
+            <input type="text" id="marca" value="Audi" readonly />
+
+            <label for="modelo">Modelo:</label>
+            <select id="modelo" required>
+                <option value="">— selecciona —</option>
+                <option value="A1">A1</option>
+                <option value="A1 Sportback">A1 Sportback</option>
+                <option value="A3">A3</option>
+                <option value="A3 Sportback">A3 Sportback</option>
+                <option value="A4">A4</option>
+                <option value="A5 Sportback">A5 Sportback</option>
+            </select>
+
+            <label for="version">Versión:</label>
+            <input type="text" id="version" required />
+
+            <label for="startYear">Año Inicio:</label>
+            <input type="number" id="startYear" required />
+
+            <label for="endYear">Año Fin:</label>
+            <input type="number" id="endYear" required />
+
+            <label for="cilindrada">Cilindrada (cc):</label>
+            <input type="number" id="cilindrada" required />
+
+            <label for="cv">Caballos (CV):</label>
+            <input type="number" id="cv" required />
+
+            <label for="id_carroceria">ID Carrocería:</label>
+            <select id="id_carroceria" required>
+                <option value="">— selecciona —</option>
+                <option value="Ber">Ber</option>
+                <option value="Tot">Tot</option>
+                <option value="Fam">Fam</option>
+                <option value="Com">Com</option>
+                <option value="Cbr">Cbr</option>
+            </select>
+
+            <label for="pf">PF (desconocido):</label>
+            <input type="number" id="pf" required />
+
+            <label for="puertas">Puertas:</label>
+            <input type="number" id="puertas" required />
+
+            <label for="id_combustible">ID Combustible:</label>
+            <select id="id_combustible" required>
+                <option value="">— selecciona —</option>
+                <option value="G">G</option>
+                <option value="D">D</option>
+                <option value="GyE">GyE</option>
+                <option value="Elc">Elc</option>
+                <option value="Otr">Otr</option>
+            </select>
+
+            <label for="matriculacion">Fecha Matriculación (Año, ej. 2015):</label>
+            <input type="number" id="matriculacion" required />
+
+            <label for="periodoDescripcion">Periodo Descripción:</label>
+            <select id="periodoDescripcion" required>
+                <option value="">— selecciona —</option>
+                <option value="4º trimestre">4º trimestre</option>
+                <option value="3º trimestre">3º trimestre</option>
+                <option value="3er trimestre">3er trimestre</option>
+            </select>
+
+            <label for="Anno">Año del coche (Anno):</label>
+            <select id="Anno" required>
+                <option value="">— selecciona —</option>
+                <option value="2017">2017</option>
+                <option value="2023">2023</option>
+            </select>
+
+            <button type="submit">Predecir precio</button>
+        </form>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3000/predict";
+
+        document.getElementById("formulario").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            /* 1. Recoger los datos del formulario
+                – Los select devuelven cadenas.
+                – Solo convierto a número cuando realmente son numéricos.
+             */
+            const data = [
+                document.getElementById("marca").value,                 // marca   (string)
+                document.getElementById("modelo").value,                // modelo  (string)
+                document.getElementById("version").value,               // version (string)
+                parseInt(document.getElementById("startYear").value),    // startYear (int)
+                parseInt(document.getElementById("endYear").value),      // endYear   (int)
+                parseFloat(document.getElementById("cilindrada").value), // cilindrada(float)
+                parseInt(document.getElementById("cv").value),          // cv        (int)
+                document.getElementById("id_carroceria").value,          // id_carroceria (string)
+                parseInt(document.getElementById("pf").value),            // pf (int)
+                parseInt(document.getElementById("puertas").value),       // puertas (int)
+                document.getElementById("id_combustible").value,        // id_combustible (string)
+                document.getElementById("matriculacion").value,          // matriculacion (string)
+                document.getElementById("periodoDescripcion").value,    // periodoDescripcion (string)
+                parseInt(document.getElementById("Anno").value)          // Anno      (int)
+            ];
+
+            /* 2. Construir el payload para Azure ML */
+            const payload = JSON.stringify({
+                input_data: {
+                    columns: [
+                        "marca", "modelo", "version", "startYear", "endYear", "cilindrada",
+                        "cv", "id_carroceria", "pf", "puertas", "id_combustible",
+                        "matriculacion", "periodoDescripcion", "Anno"
+                    ],
+                    data: [data]
+                }
+            });
+
+            /* 3. Cabeceras HTTP */
+            const headers = new Headers({
+                "Content-Type": "application/json"
+            });
+
+            /* 4. Llamada */
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers,
+                    body: payload
+                });
+
+                if (!response.ok) throw new Error("Error en la predicción");
+
+                const resultado = await response.json();
+                document.getElementById("resultado").textContent =
+                    "Precio estimado: " + JSON.stringify(resultado);
+            } catch (err) {
+                document.getElementById("resultado").textContent = "Error: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
